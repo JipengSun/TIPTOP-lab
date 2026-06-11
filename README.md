@@ -14,7 +14,7 @@ git clone https://github.com/williamshen-nz/M2T2.git
 git clone https://github.com/williamshen-nz/FoundationStereo.git
 ```
 
-Apply TiPToP code changes from the `lab/openai-vision-bbox-fixes` branch in `tiptop/` (see below).
+Apply TiPToP code changes from **[JipengSun/tiptop-fr3-lab](https://github.com/JipengSun/tiptop-fr3-lab)** (`main` = `lab/openai-vision-bbox-fixes` locally), or use the `tiptop/` checkout in this workspace.
 
 ---
 
@@ -116,6 +116,7 @@ TIPTOP/
 
 ## Related
 
+- [TiPToP lab fork (OpenAI + bbox fixes)](https://github.com/JipengSun/tiptop-fr3-lab)
 - [TiPToP upstream](https://github.com/tiptop-robot/tiptop)
 - [M2T2](https://github.com/williamshen-nz/M2T2)
 - [FoundationStereo](https://github.com/williamshen-nz/FoundationStereo)
