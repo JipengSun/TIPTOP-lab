@@ -1,0 +1,13 @@
+# Vendored upstream clones (track separately or clone from upstream)
+tiptop/
+M2T2/
+FoundationStereo/
+
+# Secrets
+.env
+.env.*
+**/.env
+
+# OS / editor
+.DS_Store
+.idea/
