@@ -1,15 +1,17 @@
 # Workstation agent handoff — TiPToP / Bamboo status
 
-**Generated:** 2026-06-10  
+**Generated:** 2026-06-10 (updated 2026-07-09)  
 **From:** NUC agent (`pci-NUC15CRKU7`, `192.168.1.7`)  
-**To:** Workstation agent (`192.168.1.6`)  
+**To:** Workstation agent (`robotman`, `10.50.167.32`) — **migrated from `pci-blenderman` (`192.168.1.6`)**  
 **Purpose:** Start TiPToP from the workstation after the NUC Bamboo stack is ready.
 
 **Read these first:**
 
-1. [`docs/nuc-tiptop-instructions.md`](docs/nuc-tiptop-instructions.md) — full NUC runbook
-2. [`improvement.md`](improvement.md) — lab pitfalls (stack switching, gripper USB)
-3. [TiPToP installation](https://tiptop-robot.readthedocs.io/en/latest/installation/) — upstream reference
+1. [`docs/workstation-migration-handoff.md`](docs/workstation-migration-handoff.md) — **NEW workstation setup** (read first on `robotman`)
+2. [`docs/nuc-tiptop-instructions.md`](docs/nuc-tiptop-instructions.md) — full NUC runbook
+3. [`improvement.md`](improvement.md) — lab pitfalls (stack switching, gripper USB)
+4. [`docs/rtx-pro-6000-gpu-handoff.md`](docs/rtx-pro-6000-gpu-handoff.md) — **Historical** — old `pci-blenderman` only; Pro 6000 works on `robotman`
+5. [TiPToP installation](https://tiptop-robot.readthedocs.io/en/latest/installation/) — upstream reference
 
 ---
 
@@ -39,8 +41,8 @@
                     └──────┬──────┘
            ┌───────────────┼───────────────┐
            │               │               │
-    [Workstation]      [NUC]         [Robot C2]
-    192.168.1.6        192.168.1.7     192.168.1.11
+    [robotman]         [NUC]         [Robot C2]
+    10.50.167.32       192.168.1.7     192.168.1.11
          │                  │               │
          │  Bamboo client   │               │
          └── ZMQ :5555 ────►│ bamboo_control_node

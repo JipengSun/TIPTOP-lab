@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Kill stale TiPToP processes on the workstation, start perception servers, launch tiptop-run.
+# Usage: bash ~/Desktop/TIPTOP/scripts/setup/start-tiptop-clean.sh [--execute-plan]
+set -eo pipefail
+
+TIPTOP_DIR="${TIPTOP_DIR:-$HOME/Desktop/TIPTOP}"
+EXECUTE_PLAN=false
+for arg in "$@"; do
+  case "$arg" in
+    --execute-plan) EXECUTE_PLAN=true ;;
+    -h|--help)
+      echo "Usage: $0 [--execute-plan]"
+      exit 0
+      ;;
+  esac
+done
+
+log() { echo "==> $*"; }
+
+export PATH="${HOME}/anaconda3/bin:${HOME}/.pixi/bin:${PATH}"
+export LD_LIBRARY_PATH="/usr/local/zed/lib:${LD_LIBRARY_PATH:-}"
+unset TIPTOP_VLM_PROVIDER TIPTOP_VLM_MODEL
+
+log "Killing stale processes..."
+pkill -TERM -f 'tiptop-run' 2>/dev/null || true
+pkill -TERM -f 'rerun --port=' 2>/dev/null || true
+pkill -TERM -f 'm2t2_server.py' 2>/dev/null || true
+pkill -TERM -f 'scripts/server.py' 2>/dev/null || true
+sleep 3
+pkill -KILL -f 'tiptop-run|m2t2_server.py|scripts/server.py' 2>/dev/null || true
+sleep 2
+
+log "Starting M2T2 (:8123)..."
+: > /tmp/m2t2_server.log
+cd "$TIPTOP_DIR/M2T2"
+nohup pixi run python m2t2_server.py >> /tmp/m2t2_server.log 2>&1 &
+M2T2_PID=$!
+
+log "Starting FoundationStereo (:1234)..."
+: > /tmp/foundation_stereo_server.log
+cd "$TIPTOP_DIR/FoundationStereo"
+nohup pixi run python scripts/server.py >> /tmp/foundation_stereo_server.log 2>&1 &
+FS_PID=$!
+
+wait_for_port() {
+  local port="$1" name="$2" logfile="$3" pid="$4" timeout="${5:-180}"
+  for i in $(seq 1 "$timeout"); do
+    if ss -tlnp 2>/dev/null | grep -q ":${port} "; then
+      log "$name ready (:$port, ${i}s)"
+      return 0
+    fi
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo "ERROR: $name died. tail $logfile:"; tail -20 "$logfile"; return 1
+    fi
+    sleep 1
+  done
+  echo "ERROR: $name timeout. tail $logfile:"; tail -20 "$logfile"; return 1
+}
+
+wait_for_port 8123 "M2T2" /tmp/m2t2_server.log "$M2T2_PID" 180
+wait_for_port 1234 "FoundationStereo" /tmp/foundation_stereo_server.log "$FS_PID" 300
+
+NUC="${TIPTOP_NUC:-nuc}"
+if ! nc -z -w 2 192.168.1.7 5555 2>/dev/null; then
+  log "NUC Bamboo not responding — restarting on $NUC..."
+  ssh -o BatchMode=yes "$NUC" 'bash ~/Desktop/TIPTOP/scripts/nuc/stop_bamboo.sh 2>/dev/null || true
+    sleep 2
+    bash ~/Desktop/TIPTOP/scripts/nuc/start_bamboo.sh
+    if ! ss -tlnp 2>/dev/null | grep -q ":5559 "; then
+      bash ~/Desktop/TIPTOP/scripts/nuc/start_gripper.sh
+    fi'
+  sleep 2
+fi
+if ! nc -z -w 2 192.168.1.7 5555 2>/dev/null || ! nc -z -w 2 192.168.1.7 5559 2>/dev/null; then
+  echo "ERROR: NUC Bamboo/gripper not up on :5555/:5559. Activate FCI on Desk, then:"
+  echo "  ssh nuc 'bash ~/Desktop/TIPTOP/scripts/nuc/start_bamboo.sh; bash ~/Desktop/TIPTOP/scripts/nuc/start_gripper.sh'"
+  exit 1
+fi
+log "NUC Bamboo ready (:5555, :5559)"
+
+log "Starting tiptop-run..."
+cd "$TIPTOP_DIR/tiptop"
+if $EXECUTE_PLAN; then
+  exec pixi run tiptop-run
+else
+  exec pixi run tiptop-run --no-execute-plan
+fi

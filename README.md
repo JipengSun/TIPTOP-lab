@@ -1,10 +1,12 @@
-# TiPToP Lab — pci-blenderman + NUC Bamboo (FR3)
+# TiPToP Lab — robotman + NUC Bamboo (FR3)
 
 Lab workspace for running [TiPToP](https://github.com/tiptop-robot/tiptop) on a Franka FR3 with Bamboo arm control, OpenAI Vision perception, M2T2 grasping, and FoundationStereo depth.
 
-**Workstation:** `pci-blenderman` (`192.168.1.6`)  
+**Workstation:** `robotman` (`10.50.167.32`, `ssh pci@10.50.167.32`)  
 **NUC (Bamboo):** `192.168.1.7` — arm `:5555`, Robotiq gripper `:5559`  
 **Robot:** Franka FR3 `192.168.1.11` (FCI via Desk on workstation)
+
+**Migrating?** Read [`docs/workstation-migration-handoff.md`](docs/workstation-migration-handoff.md) first.
 
 Set `TIPTOP_DIR=~/Desktop/TIPTOP`. Clone upstream deps into this tree:
 

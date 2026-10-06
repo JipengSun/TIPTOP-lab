@@ -9,6 +9,11 @@ source "$SCRIPT_DIR/env.sh"
 GRIPPER_DEVICE="${GRIPPER_DEVICE:-/dev/ttyUSB0}"
 GRIPPER_PORT="${GRIPPER_PORT:-5559}"
 
+if ss -tlnp 2>/dev/null | grep -q ":${GRIPPER_PORT} " && pgrep -f 'gripper_server.py' >/dev/null; then
+  echo "Gripper server already running on :$GRIPPER_PORT."
+  exit 0
+fi
+
 if [[ ! -e "$GRIPPER_DEVICE" ]]; then
   echo "ERROR: $GRIPPER_DEVICE not found. Is Robotiq USB plugged into the NUC?"
   ls -la /dev/ttyUSB* /dev/ttyACM* 2>/dev/null || true
